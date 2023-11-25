@@ -139,6 +139,16 @@ func (a *Application) GetCategories(w http.ResponseWriter, r *http.Request) {
 	enc.Encode(categories)
 }
 
+func (a *Application) GetPromotions(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query()
+	partner, _ := strconv.Atoi(query.Get("partner"))
+	latitude, _ := strconv.ParseFloat(query.Get("lat"), 64)
+	longitude, _ := strconv.ParseFloat(query.Get("long"), 64)
+	limit, _ := strconv.Atoi(query.Get("limit"))
+
+	a.storage.GetPromotionsByPartner()
+}
+
 func main() {
 	// POSTGRESQL="host=localhost port=5432 user=postgres password=first_iteration dbname=default sslmode=disable"
 	db, err := gorm.Open(postgres.Open(os.Getenv("POSTGRESQL")), &gorm.Config{})
@@ -154,6 +164,7 @@ func main() {
 	app := Application{storage: storage}
 	http.HandleFunc("/healthcheck", app.HealthCheck)
 	http.HandleFunc("/categories", app.GetCategories)
+	http.HandleFunc("/promtions", app.GetPromotions)
 
 	// LISTEN=:8080
 	if err := http.ListenAndServe(os.Getenv("LISTEN"), nil); err != nil {
